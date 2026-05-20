@@ -1,4 +1,4 @@
-package comp3170.live.week11;
+package comp3170.live.week12;
 
 import static comp3170.Math.TAU;
 import static org.lwjgl.opengl.GL11.GL_FILL;
@@ -78,14 +78,9 @@ public class Gem extends SceneObject {
 	}
 
 	private void loadTextures() {
-		diffuseTextureID = loadTexture(DIFFUSE_TEXTURE);
-		specularTextureID = loadTexture(SPECULAR_TEXTURE);
-	}
-	
-	private int loadTexture(String textureFile) {
-		int textureID = -1;
 		try {
-			textureID = TextureLibrary.instance.loadTexture(textureFile);
+			diffuseTextureID = TextureLibrary.instance.loadTexture(DIFFUSE_TEXTURE);
+			specularTextureID = TextureLibrary.instance.loadTexture(SPECULAR_TEXTURE);
 		} catch (IOException e) {
 			e.printStackTrace();
 			System.exit(1);
@@ -105,7 +100,6 @@ public class Gem extends SceneObject {
 		// MipMaps
 		glGenerateMipmap(GL_TEXTURE_2D);
 		
-		return textureID;
 	}
 
 	private void createBuffers() {
@@ -179,8 +173,6 @@ public class Gem extends SceneObject {
 		uvBuffer = GLBuffers.createBuffer(uvs);		
 	}
 	
-	private Vector3f diffuseMaterial = new Vector3f(1,1,0);
-	private Vector3f specularMaterial = new Vector3f(1,1,1);
 	private float shininess = 1000f;
 
 	private Vector3f ambientIntensity = new Vector3f(0.1f,0.1f,0.1f);
@@ -202,7 +194,7 @@ public class Gem extends SceneObject {
 			break;
 	
 		case Week8.WIREFRAME_PASS:
-//			drawSelfWireframe(mvpMatrix);
+			drawSelfWireframe(mvpMatrix);
 			break;
 		}
 	}
@@ -234,17 +226,14 @@ public class Gem extends SceneObject {
 		shader.setAttribute("a_position", vertexBuffer);
 		shader.setAttribute("a_normal", normalBuffer);
 
-		// material
-		shader.setUniform("u_diffuseMaterial", diffuseMaterial);
-		shader.setUniform("u_specularMaterial", specularMaterial);
-		shader.setUniform("u_shininess", shininess);
 
 		// light
 		shader.setUniform("u_ambientIntensity", ambientIntensity);
 		shader.setUniform("u_lightIntensity", lightIntensity);
 		shader.setUniform("u_lightDirection", lightDirection);
 
-		// texture
+		// material
+		shader.setUniform("u_shininess", shininess);
 		shader.setAttribute("a_uv", uvBuffer);
 		
 		glActiveTexture(GL_TEXTURE0);				// we are loading into texture slot 0
