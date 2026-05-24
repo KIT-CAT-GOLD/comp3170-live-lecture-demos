@@ -6,12 +6,12 @@ import comp3170.live.common.cameras.PerspectiveOrbittingCamera;
 
 public class Camera extends PerspectiveOrbittingCamera {
 
-	private static final float DISTANCE = 8;
+	private static final float DISTANCE = 11;
 	private static final float WIDTH = 4;
 	private static final float HEIGHT = 4;
 	private static final float NEAR = 0.1f;
 	private static final float FAR = 20;
-	private static final float FOVY = TAU / 4; 
+	private static final float FOVY = TAU / 6; 
 	private static final float ASPECT = 1;
 	
 	public Camera() {

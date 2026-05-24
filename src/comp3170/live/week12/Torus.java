@@ -51,8 +51,8 @@ public class Torus extends SceneObject {
 	final private String WIREFRAME_VERTEX_SHADER = "simpleVertex.glsl";
 	final private String WIREFRAME_FRAGMENT_SHADER = "simpleFragment.glsl";
 
-	final private String DIFFUSE_TEXTURE = "128_oak fine wood texture-seamless.jpg";
-	final private String SPECULAR_TEXTURE = "brick_wall2-spec-1024.tga";
+	final private String DIFFUSE_TEXTURE = "wood-diffuse.jpg";
+	final private String SPECULAR_TEXTURE = "wood-specular.jpg";
 
 	private static final Vector2i NSIDES = new Vector2i(20, 80);
 	private static final Vector2f RADIUS = new Vector2f(1, 4);
@@ -72,7 +72,8 @@ public class Torus extends SceneObject {
 
 	private int diffuseTextureID;
 	private int specularTextureID;
-
+	private float shininess = 100f;
+	
 	private Vector4f wireColour = new Vector4f(1,1,1,1);
 	
 	private Shader litShader;
@@ -107,7 +108,7 @@ public class Torus extends SceneObject {
 			float angle = i * TAU / NSIDES.x;
 			
 			crossSectionVertices[i] = new Vector4f(RADIUS.x,0,0,1).rotateZ(angle);
-			crossSectionNormals[i] = new Vector4f(1,0,0,1).rotateZ(angle);			
+			crossSectionNormals[i] = new Vector4f(1,0,0,0).rotateZ(angle);			
 		}
 	}
 
@@ -226,11 +227,10 @@ public class Torus extends SceneObject {
 	}
 
 	
-	private float shininess = 1000f;
 
 	private Vector3f ambientIntensity = new Vector3f(0.1f,0.1f,0.1f);
 	private Vector3f lightIntensity = new Vector3f(1,1,1);
-	private Vector4f lightDirection = new Vector4f(1,0,0,0); 
+	private Vector4f lightDirection = new Vector4f(1,1,0,0); 
 
 	private Matrix4f cameraMatrix = new Matrix4f();
 	private Vector4f camera = new Vector4f(0,0,0,0); 
@@ -280,29 +280,25 @@ public class Torus extends SceneObject {
 		litShader.setAttribute("a_position", vertexBuffer);
 		litShader.setAttribute("a_normal", normalBuffer);
 
-
 		// light
 		litShader.setUniform("u_ambientIntensity", ambientIntensity);
 		litShader.setUniform("u_lightIntensity", lightIntensity);
 		litShader.setUniform("u_lightDirection", lightDirection);
 
-		// material
-		litShader.setUniform("u_shininess", shininess);
+		// material		
 		litShader.setAttribute("a_uv", uvBuffer);
-		
-		glActiveTexture(GL_TEXTURE0);				// we are loading into texture slot 0
-		glBindTexture(GL_TEXTURE_2D, diffuseTextureID);	// load the texture into this slot
-		litShader.setUniform("u_diffuseTexture", 0);			// tell GLSL to use this slot
 
-		glActiveTexture(GL_TEXTURE1);				// we are loading into texture slot 0
-		glBindTexture(GL_TEXTURE_2D, specularTextureID);	// load the texture into this slot
-		litShader.setUniform("u_specularTexture", 1);			// tell GLSL to use this slot
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, diffuseTextureID);
+		litShader.setUniform("u_diffuseTexture", 0);
 
-		
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D, specularTextureID);
+		litShader.setUniform("u_specularTexture", 1);
+		litShader.setUniform("u_shininess", shininess);
+
 		// camera
 		Scene.theScene.getCamera().getModelMatrix(cameraMatrix);
-//			cameraMatrix.getColumn(2, camera);	// k axis - orthorgaphic
-//			shader.setUniform("u_camera", cameraDirection);			
 		cameraMatrix.getColumn(3, camera);	// origin - perspecitce
 		litShader.setUniform("u_cameraPosition", camera);			
 					

@@ -37,9 +37,8 @@ public class Scene extends SceneObject {
 //		Cylinder cylinder = new Cylinder();
 //		cylinder.setParent(this);
 
-//		Axes3D axes = new Axes3D();
-//		axes.setParent(this);
-//		axes.getMatrix().translate(0,1.1f,0);
+		Axes3D axes = new Axes3D();
+		axes.setParent(this);
 		
 		camera = new Camera();
 	}
