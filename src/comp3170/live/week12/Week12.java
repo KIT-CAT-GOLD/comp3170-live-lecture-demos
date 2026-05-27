@@ -1,8 +1,8 @@
 package comp3170.live.week12;
 
 import static org.lwjgl.opengl.GL11.GL_COLOR_BUFFER_BIT;
-import static org.lwjgl.opengl.GL11.GL_CULL_FACE;
 import static org.lwjgl.opengl.GL11.GL_DEPTH_BUFFER_BIT;
+import static org.lwjgl.opengl.GL11.GL_CULL_FACE;
 import static org.lwjgl.opengl.GL11.GL_DEPTH_TEST;
 import static org.lwjgl.opengl.GL11.GL_LEQUAL;
 import static org.lwjgl.opengl.GL11.glClear;
@@ -11,6 +11,8 @@ import static org.lwjgl.opengl.GL11.glClearDepth;
 import static org.lwjgl.opengl.GL11.glDepthFunc;
 import static org.lwjgl.opengl.GL11.glEnable;
 import static org.lwjgl.opengl.GL11.glViewport;
+import static org.lwjgl.opengl.GL30.GL_FRAMEBUFFER;
+import static org.lwjgl.opengl.GL30.glBindFramebuffer;
 
 import java.io.File;
 
@@ -19,10 +21,12 @@ import org.joml.Matrix4f;
 import comp3170.IWindowListener;
 import comp3170.InputManager;
 import comp3170.OpenGLException;
+import comp3170.Shader;
 import comp3170.ShaderLibrary;
 import comp3170.TextureLibrary;
 import comp3170.Window;
 import comp3170.live.common.cameras.ICamera;
+import comp3170.live.week12.sceneobjects.RenderTextureQuad;
 
 /**
  * Week 10 Demo
@@ -36,6 +40,9 @@ public class Week12 implements IWindowListener{
 	private static final File SHADER_DIR = new File("src/comp3170/live/week12/shaders");
 	private static final File TEXTURE_DIR = new File("src/comp3170/live/week12/textures");
 
+	private static final String EFFECT_VERTEX_SHADER = "effectVertex.glsl";
+	private static final String EFFECT_FRAGMENT_SHADER = "effectFragment.glsl";
+	
 	private Window window;
 	private int screenWidth = 1000;
 	private int screenHeight = 1000;
@@ -46,6 +53,8 @@ public class Week12 implements IWindowListener{
 	private Scene scene;
 
 	private boolean drawWireframes = true;
+	private Shader effectShader;
+	private RenderTextureQuad quad;
 	
 	public static final int OPAQUE_PASS = 0; 
 	public static final int WIREFRAME_PASS = 1; 
@@ -72,7 +81,7 @@ public class Week12 implements IWindowListener{
 		glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 		glEnable(GL_DEPTH_TEST);	// enable depth testing
 		glDepthFunc(GL_LEQUAL);			
-//		glEnable(GL_CULL_FACE);		// enable backface culling
+		//glEnable(GL_CULL_FACE);		// enable backface culling
 		
 		// Create ShaderLibrary and TextureLibrary singletons and 
 		// configure the paths they will use to find files
@@ -82,6 +91,11 @@ public class Week12 implements IWindowListener{
 		
 		scene = new Scene();
 
+		// Create render quad
+		
+		effectShader = ShaderLibrary.instance.compileShader(EFFECT_VERTEX_SHADER, EFFECT_FRAGMENT_SHADER);
+		quad = new RenderTextureQuad(effectShader, screenWidth, screenHeight);
+		
 		input = new InputManager(window);		
 		oldTime = System.currentTimeMillis();
 
@@ -100,6 +114,8 @@ public class Week12 implements IWindowListener{
 
 		// update the scene
 		scene.update(deltaTime, input);
+		quad.update(deltaTime, input);
+		
 		
 		// input needs to be cleared at the end of every frame
 		input.clear();
@@ -122,6 +138,28 @@ public class Week12 implements IWindowListener{
 	public void draw() {
 		// update the scene before drawing
 		update();
+
+		drawToRenderTexture();
+
+		drawToScreen();
+
+	}
+
+	private void drawToScreen() {
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+		glClear(GL_COLOR_BUFFER_BIT);
+		glViewport(0, 0, screenWidth, screenHeight);
+
+		glClearDepth(1f);
+		glClear(GL_DEPTH_BUFFER_BIT);
+
+		quad.draw();
+	}
+
+	private void drawToRenderTexture() {
+		int frameBuffer = quad.getFrameBuffer();
+		glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer);
 		
 		// clear buffers before drawing
 		glViewport(0, 0, screenWidth, screenHeight);
@@ -144,7 +182,6 @@ public class Week12 implements IWindowListener{
 		if (drawWireframes) {
 			scene.draw(mvpMatrix, WIREFRAME_PASS);
 		}
-
 	}
 
 	/**

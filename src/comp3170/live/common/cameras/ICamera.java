@@ -42,4 +42,5 @@ public interface ICamera {
 	 */
 
 	public void update(float deltaTime, InputManager input);
+
 }

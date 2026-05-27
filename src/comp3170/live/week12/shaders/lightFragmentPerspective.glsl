@@ -11,7 +11,11 @@ uniform sampler2D u_diffuseTexture;
 uniform sampler2D u_specularTexture;
 uniform float u_shininess;
 
+uniform float u_near;
+uniform float u_far;
+
 in vec4 v_position; 				// WORLD
+in vec4 v_viewPosition;				// VIEW
 in vec4 v_normal; 					// WORLD
 in vec2 v_uv;						// UV
 
@@ -39,6 +43,8 @@ void main() {
 	vec3 intensity = ambient + diffuse + specular; 
 	vec3 brightness = pow(intensity, 1. / GAMMA);
 	
-    o_colour = vec4(brightness, 1);
+	float depth = (-v_viewPosition.z - u_near) / (u_far - u_near);
+	
+    o_colour = vec4(brightness, depth);
 }
 

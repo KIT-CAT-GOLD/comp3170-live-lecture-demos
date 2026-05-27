@@ -1,10 +1,9 @@
-package comp3170.live.week12;
+package comp3170.live.week12.sceneobjects;
 
 import static comp3170.Math.TAU;
 import static comp3170.Math.cross;
 import static org.lwjgl.opengl.GL11.GL_FILL;
 import static org.lwjgl.opengl.GL11.GL_FRONT_AND_BACK;
-import static org.lwjgl.opengl.GL11.GL_POINT;
 import static org.lwjgl.opengl.GL11.GL_LINE;
 import static org.lwjgl.opengl.GL11.GL_LINEAR;
 import static org.lwjgl.opengl.GL11.GL_LINEAR_MIPMAP_LINEAR;
@@ -17,7 +16,6 @@ import static org.lwjgl.opengl.GL11.GL_TEXTURE_WRAP_T;
 import static org.lwjgl.opengl.GL11.GL_TRIANGLES;
 import static org.lwjgl.opengl.GL11.GL_UNSIGNED_INT;
 import static org.lwjgl.opengl.GL11.glBindTexture;
-import static org.lwjgl.opengl.GL11.glDrawArrays;
 import static org.lwjgl.opengl.GL11.glDrawElements;
 import static org.lwjgl.opengl.GL11.glPolygonMode;
 import static org.lwjgl.opengl.GL11.glTexParameteri;
@@ -42,6 +40,8 @@ import comp3170.SceneObject;
 import comp3170.Shader;
 import comp3170.ShaderLibrary;
 import comp3170.TextureLibrary;
+import comp3170.live.common.cameras.ICamera;
+import comp3170.live.week12.Scene;
 import comp3170.live.week8.Week8;
 
 public class Torus extends SceneObject {
@@ -233,9 +233,10 @@ public class Torus extends SceneObject {
 	private Vector4f lightDirection = new Vector4f(1,1,0,0); 
 
 	private Matrix4f cameraMatrix = new Matrix4f();
-	private Vector4f camera = new Vector4f(0,0,0,0); 
+	private Vector4f cameraPosition = new Vector4f(0,0,0,0); 
 
 	private Matrix4f modelMatrix = new Matrix4f();
+	private Matrix4f modelViewMatrix = new Matrix4f();
 	private Matrix4f normalMatrix = new Matrix4f();
 	
 	public void drawSelf(Matrix4f mvpMatrix, int pass) {
@@ -262,6 +263,9 @@ public class Torus extends SceneObject {
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
 		glDrawElements(GL_TRIANGLES, indices.length, GL_UNSIGNED_INT, 0);
 	}
+
+	private static final float NEAR = 0.1f;
+	private static final float FAR = 20;
 
 	private void drawSelfOpaque(Matrix4f mvpMatrix) {
 		// Opaque pass: draw the faces
@@ -298,10 +302,20 @@ public class Torus extends SceneObject {
 		litShader.setUniform("u_shininess", shininess);
 
 		// camera
-		Scene.theScene.getCamera().getModelMatrix(cameraMatrix);
-		cameraMatrix.getColumn(3, camera);	// origin - perspecitce
-		litShader.setUniform("u_cameraPosition", camera);			
+		
+		ICamera camera = Scene.theScene.getCamera();
+		
+		camera.getModelMatrix(cameraMatrix);
+		cameraMatrix.getColumn(3, cameraPosition);	// origin - perspecitce
+		litShader.setUniform("u_cameraPosition", cameraPosition);			
 					
+		camera.getViewMatrix(modelViewMatrix);
+		modelViewMatrix.mulLocal(modelMatrix);   // MV = M * V;
+		litShader.setUniform("u_modelViewMatrix", modelViewMatrix);
+		
+		litShader.setUniform("u_near", NEAR);
+		litShader.setUniform("u_far", FAR);
+				
 		// draw
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);

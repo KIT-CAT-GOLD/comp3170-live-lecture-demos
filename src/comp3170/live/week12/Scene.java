@@ -7,6 +7,7 @@ import comp3170.SceneObject;
 import comp3170.live.common.cameras.ICamera;
 import comp3170.live.common.sceneobjects.Axes3D;
 import comp3170.live.common.sceneobjects.Grid;
+import comp3170.live.week12.sceneobjects.Torus;
 
 /**
  * The Scene class is the root of the scene graph, and handles the construction of objects in the scene.
@@ -18,7 +19,6 @@ public class Scene extends SceneObject {
 
 	public static Scene theScene = null;
 	private ICamera camera; // the 'common' package contains code for some standard cameras
-	private Gem gem;
 
 	public Scene() {
 		theScene = this;
@@ -26,19 +26,8 @@ public class Scene extends SceneObject {
 		Torus torus = new Torus();
 		torus.setParent(this);
 		
-//		Grid grid = new Grid(21);
-//		grid.setParent(this);
-//		grid.getMatrix().scale(2);
-
-//		gem = new Gem();
-//		gem.setParent(this);
-//		gem.getMatrix().scale(1,2,1);
-
-//		Cylinder cylinder = new Cylinder();
-//		cylinder.setParent(this);
-
-		Axes3D axes = new Axes3D();
-		axes.setParent(this);
+//		Axes3D axes = new Axes3D();
+//		axes.setParent(this);
 		
 		camera = new Camera();
 	}
